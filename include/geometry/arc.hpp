@@ -1,18 +1,14 @@
-#ifndef _DIAMOND_FEM_GEOMETRY_LINE_HPP
-#define _DIAMOND_FEM_GEOMETRY_LINE_HPP
+#ifndef _DIAMOND_FEM_GEOMETRY_ARC_HPP
+#define _DIAMOND_FEM_GEOMETRY_ARC_HPP
 
 #include <geometry/curve.hpp>
-#include <vector>
 
 namespace diamond_fem::geometry {
 
-class Line : public Curve {
-private:
-  Point p1_;
-  Point p2_;
-
+class Arc : public Curve {
 public:
-  Line(const Point &p1, const Point &p2);
+  Arc(const Point &center, const Vec &radius_vector,
+      const double &angle_counterclockwise);
 
   virtual double Length() const override;
   virtual Point GetParametricPoint(const double &t) const override;
@@ -22,8 +18,17 @@ public:
   virtual double DistanceToPoint(const Point &point) const override;
   virtual Vec NormalAtPoint(const Point &point) const override;
   virtual std::string Description() const override;
+
+private:
+  /**
+   * Start point of arc is center_ + radius_vector_.
+   * Radius of arc is radius_vector_.Length()
+   */
+  Vec radius_vector_;
+  Point center_;
+  double angle_; // counterclockwise, radians
 };
 
 } // namespace diamond_fem::geometry
 
-#endif // _DIAMOND_FEM_GEOMETRY_LINE_HPP
+#endif // _DIAMOND_FEM_GEOMETRY_ARC_HPP

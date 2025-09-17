@@ -35,8 +35,9 @@ if(DIAMOND_FEM_BUILD_TESTS)
     target_link_libraries(DiamondFEMTests GTest::gtest_main DiamondFEM)
     target_include_directories(DiamondFEMTests PRIVATE ${gtest_SOURCE_DIR}/include)
 
+    set(GTEST_DISCOVER_TESTS_FLAGS "--gtest_output=pretty")
     gtest_discover_tests(DiamondFEMTests)
-endif()
+    endif()
 
 find_package(CGAL REQUIRED COMPONENTS Qt6)
 

@@ -1,17 +1,9 @@
 #include <cmath>
 #include <fmt/format.h>
-#include <geometry/constants.hpp>
+#include <geometry/utils.hpp>
 #include <geometry/line.hpp>
 
 namespace diamond_fem::geometry {
-
-namespace {
-
-bool IsInRange(const double &x, const double &a, const double &b) {
-  return x >= std::min(a, b) && x <= std::max(a, b);
-}
-
-} // namespace
 
 Line::Line(const Point &p1, const Point &p2) : p1_(p1), p2_(p2) {}
 
@@ -44,7 +36,7 @@ Line::GetIntersectionsWithAxis(const Point &point_on_axis,
 
   const auto det = A * D - B * C;
 
-  if (std::abs(det) < EPSILON) { // Прямые не параллельны
+  if (std::abs(det) < EPSILON) { // Прямые параллельны
     return {};
   }
 
