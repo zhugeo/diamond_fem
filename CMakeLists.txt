@@ -7,6 +7,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+find_package(Boost REQUIRED)
+
 add_library(DiamondFEM)
 
 file(GLOB_RECURSE DIAMOND_FEM_SOURCES src/**/*.cpp)
@@ -42,4 +44,5 @@ if(DIAMOND_FEM_BUILD_TESTS)
 find_package(CGAL REQUIRED COMPONENTS Qt6)
 
 target_include_directories(DiamondFEM PUBLIC include)
+include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(DiamondFEM CGAL::CGAL CGAL::CGAL_Basic_viewer fmt::fmt)

@@ -11,8 +11,6 @@ bool IsNear(double a, double b);
 
 bool IsInRange(double x, double a, double b);
 
-using
-
 } // namespace diamond_fem::geometry
 
 #endif // _DIAMOND_FEM_GEOMETRY_CORE_HPP

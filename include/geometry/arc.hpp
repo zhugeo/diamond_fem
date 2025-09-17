@@ -20,6 +20,9 @@ public:
   virtual std::string Description() const override;
 
 private:
+  bool IsPointOnArc_(const Point &p) const;
+  Point GetClosestPointOnArc_(const Point &p) const;
+
   /**
    * Start point of arc is center_ + radius_vector_.
    * Radius of arc is radius_vector_.Length()

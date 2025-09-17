@@ -1,6 +1,6 @@
 #include <cmath>
 #include <fmt/format.h>
-#include <geometry/utils.hpp>
+#include <geometry/core.hpp>
 #include <geometry/line.hpp>
 
 namespace diamond_fem::geometry {
