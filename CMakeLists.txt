@@ -28,7 +28,6 @@ if(DIAMOND_FEM_BUILD_TESTS)
     find_package(GTest REQUIRED)
     include(GoogleTest)
     enable_testing()
-    cmake_minimum_required(VERSION 3.24)
 
     file(GLOB_RECURSE TEST_SOURCES tests/**/*.cpp)
 
@@ -39,10 +38,15 @@ if(DIAMOND_FEM_BUILD_TESTS)
 
     set(GTEST_DISCOVER_TESTS_FLAGS "--gtest_output=pretty")
     gtest_discover_tests(DiamondFEMTests)
-    endif()
+endif() # DIAMOND_FEM_BUILD_TESTS
+
+option(DIAMOND_FEM_BUILD_EXAMPLE "Build example" ON)
+if(DIAMOND_FEM_BUILD_EXAMPLE)
+    add_executable(DiamondFEMExample example/main.cpp)
+    target_link_libraries(DiamondFEMExample DiamondFEM)
+endif() # DIAMOND_FEM_BUILD_EXAMPLE
 
 find_package(CGAL REQUIRED COMPONENTS Qt6)
 
 target_include_directories(DiamondFEM PUBLIC include)
-include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(DiamondFEM CGAL::CGAL CGAL::CGAL_Basic_viewer fmt::fmt)
