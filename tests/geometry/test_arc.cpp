@@ -1,10 +1,9 @@
-#include <geometry/arc.hpp>
+#include <gtest/gtest.h>
 
 #include <algorithm>
 #include <tuple>
 
-#include <gtest/gtest.h>
-
+#include <geometry/arc.hpp>
 #include <geometry/point.hpp>
 
 namespace diamond_fem::geometry {

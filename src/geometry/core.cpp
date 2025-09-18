@@ -25,13 +25,16 @@ BoundingBox BoundingBoxFromPoints(const std::vector<Point> &points) {
   return bbox;
 }
 
-BoundingBox CombineBoundingBoxes(const BoundingBox &a, const BoundingBox &b) {
-  return {
-      .x_min = std::min(a.x_min, b.x_min),
-      .x_max = std::max(a.x_max, b.x_max),
-      .y_min = std::min(a.y_min, b.y_min),
-      .y_max = std::max(a.y_max, b.y_max),
-  };
+BoundingBox CombineBoundingBoxes(const std::vector<BoundingBox> &boxes) {
+  auto points = std::vector<Point>();
+  points.reserve(boxes.size() * 2);
+
+  for (const auto &box : boxes) {
+    points.push_back(Point(box.x_min, box.y_min));
+    points.push_back(Point(box.x_max, box.y_max));
+  }
+
+  return BoundingBoxFromPoints(points);
 }
 
 bool IsNear(double a, double b) { return std::abs(a - b) < EPSILON; }

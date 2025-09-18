@@ -19,13 +19,13 @@ int main() {
       std::make_shared<df::geometry::Line>(df::geometry::Point{0.0, 0.0},
                                            df::geometry::Point{1.0, 1.0})));
 
-  auto stepper = df::meshing::PointStepper(std::move(borders));
+  //auto stepper = df::meshing::PointStepper(std::move(borders));
 
-  const auto points = stepper.Step();
+  // const auto points = stepper.Step();
 
-  auto out = std::ofstream("out.txt");
-  for (const auto &point : points) {
-    out << point.point.GetX() << " " << point.point.GetY() << std::endl;
-  }
-  out.close();
+  // auto out = std::ofstream("out.txt");
+  // for (const auto &point : points) {
+  //   out << point.point.GetX() << " " << point.point.GetY() << std::endl;
+  // }
+  // out.close();
 }

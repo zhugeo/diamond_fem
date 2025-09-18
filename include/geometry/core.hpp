@@ -15,7 +15,7 @@ struct BoundingBox {
 
 BoundingBox BoundingBoxFromPoints(const std::vector<Point> &points);
 
-BoundingBox CombineBoundingBoxes(const BoundingBox &a, const BoundingBox &b);
+BoundingBox CombineBoundingBoxes(const std::vector<BoundingBox> &boxes);
 
 bool IsNear(double a, double b);
 
