@@ -3,9 +3,9 @@
 namespace diamond_fem::meshing {
 
 PointStepper::PointStepper(
-    std::vector<std::shared_ptr<analysis_task::Border>> borders) {
-  // TODO
-}
+    std::vector<std::shared_ptr<analysis_task::Border>> borders)
+    : borders_(borders) {}
+
 std::vector<PointWithBorderInfo> PointStepper::Step() {
   return {}; // TODO
 }

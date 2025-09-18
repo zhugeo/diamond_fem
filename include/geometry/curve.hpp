@@ -1,9 +1,9 @@
 #ifndef _DIAMOND_FEM_GEOMETRY_CURVE_HPP
 #define _DIAMOND_FEM_GEOMETRY_CURVE_HPP
 
-#include <geometry/point.hpp>
-#include <geometry/vec.hpp>
 #include <vector>
+
+#include <geometry/geometry_fwd.hpp>
 
 namespace diamond_fem::geometry {
 
@@ -22,6 +22,7 @@ public:
    * @returns Normal, guaranteed to be normalized
    */
   virtual Vec NormalAtPoint(const Point &point) const = 0;
+  virtual BoundingBox GetBoundingBox() const = 0;
   virtual std::string Description() const = 0;
 };
 

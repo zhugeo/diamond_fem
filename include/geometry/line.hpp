@@ -1,16 +1,14 @@
 #ifndef _DIAMOND_FEM_GEOMETRY_LINE_HPP
 #define _DIAMOND_FEM_GEOMETRY_LINE_HPP
 
-#include <geometry/curve.hpp>
 #include <vector>
+
+#include <geometry/curve.hpp>
+#include <geometry/point.hpp>
 
 namespace diamond_fem::geometry {
 
 class Line : public Curve {
-private:
-  Point p1_;
-  Point p2_;
-
 public:
   Line(const Point &p1, const Point &p2);
 
@@ -21,7 +19,12 @@ public:
                            const Vec &axis_direction) const override;
   virtual double DistanceToPoint(const Point &point) const override;
   virtual Vec NormalAtPoint(const Point &point) const override;
+  virtual BoundingBox GetBoundingBox() const override;
   virtual std::string Description() const override;
+
+private:
+  Point p1_;
+  Point p2_;
 };
 
 } // namespace diamond_fem::geometry

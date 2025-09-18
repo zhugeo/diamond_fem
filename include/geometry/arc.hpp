@@ -2,6 +2,8 @@
 #define _DIAMOND_FEM_GEOMETRY_ARC_HPP
 
 #include <geometry/curve.hpp>
+#include <geometry/point.hpp>
+#include <geometry/vec.hpp>
 
 namespace diamond_fem::geometry {
 
@@ -17,10 +19,12 @@ public:
                            const Vec &axis_direction) const override;
   virtual double DistanceToPoint(const Point &point) const override;
   virtual Vec NormalAtPoint(const Point &point) const override;
+  virtual BoundingBox GetBoundingBox() const override;
   virtual std::string Description() const override;
 
 private:
   bool IsPointOnArc_(const Point &p) const;
+  std::vector<Point> RetainArcPoints_(std::vector<Point> points) const;
   Point GetClosestPointOnArc_(const Point &p) const;
 
   /**

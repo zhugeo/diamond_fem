@@ -21,7 +21,7 @@ public:
   std::vector<PointWithBorderInfo> Step();
 
 private:
-  std::vector<analysis_task::Border> borders_;
+  std::vector<std::shared_ptr<analysis_task::Border>> borders_;
 };
 
 } // namespace diamond_fem::meshing

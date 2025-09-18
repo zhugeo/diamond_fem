@@ -1,6 +1,7 @@
 #include <geometry/arc.hpp>
 
 #include <cmath>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -11,6 +12,46 @@
 #include <geometry/vec.hpp>
 
 namespace diamond_fem::geometry {
+
+namespace {
+
+std::vector<Point> CircleAndLineIntersections(const Point &center,
+                                              const double &radius,
+                                              const Point &point_on_axis,
+                                              const Vec &axis_direction) {
+  const auto to_center = center - point_on_axis;
+
+  // Project to_center onto line direction
+  const auto dir_dot_dir = axis_direction.DotProduct(axis_direction);
+  const auto dir_dot_to_center = axis_direction.DotProduct(to_center);
+
+  // Closest point on line to circle center
+  const auto t_closest = dir_dot_to_center / dir_dot_dir;
+  const auto closest_point = point_on_axis + axis_direction * t_closest;
+
+  const auto distance_to_center = (closest_point - center).Length();
+
+  if (distance_to_center > radius) {
+    return {};
+  }
+
+  if (IsNear(distance_to_center, radius)) {
+    return {closest_point};
+  }
+
+  const auto half_chord_length =
+      std::sqrt(radius * radius - distance_to_center * distance_to_center);
+  const auto t_offset = half_chord_length / std::sqrt(dir_dot_dir);
+
+  const auto intersection1 =
+      point_on_axis + axis_direction * (t_closest - t_offset);
+  const auto intersection2 =
+      point_on_axis + axis_direction * (t_closest + t_offset);
+
+  return {intersection1, intersection2};
+}
+
+} // namespace
 
 Arc::Arc(const Point &center, const Vec &radius_vector, const double &angle)
     : center_(center), radius_vector_(radius_vector), angle_(angle) {}
@@ -39,47 +80,8 @@ Point Arc::GetParametricPoint(const double &t) const {
 std::vector<Point>
 Arc::GetIntersectionsWithAxis(const Point &point_on_axis,
                               const Vec &axis_direction) const {
-  const auto radius = radius_vector_.Length();
-  const auto to_center = center_ - point_on_axis;
-
-  // Project to_center onto line direction
-  const auto dir_dot_dir = axis_direction.DotProduct(axis_direction);
-  const auto dir_dot_to_center = axis_direction.DotProduct(to_center);
-
-  // Closest point on line to circle center
-  const auto t_closest = dir_dot_to_center / dir_dot_dir;
-  const auto closest_point = point_on_axis + axis_direction * t_closest;
-
-  const auto distance_to_center = (closest_point - center_).Length();
-
-  if (distance_to_center > radius) {
-    return {};
-  }
-
-  const auto retain_arc_points = [&](const std::vector<Point> &points) {
-    auto retained_points = std::vector<Point>();
-    for (const auto &point : points) {
-      if (IsPointOnArc_(point)) {
-        retained_points.push_back(point);
-      }
-    }
-    return retained_points;
-  };
-
-  if (IsNear(distance_to_center, radius)) {
-    return retain_arc_points({closest_point});
-  }
-
-  const auto half_chord_length =
-      std::sqrt(radius * radius - distance_to_center * distance_to_center);
-  const auto t_offset = half_chord_length / std::sqrt(dir_dot_dir);
-
-  const auto intersection1 =
-      point_on_axis + axis_direction * (t_closest - t_offset);
-  const auto intersection2 =
-      point_on_axis + axis_direction * (t_closest + t_offset);
-
-  return retain_arc_points({intersection1, intersection2});
+  return RetainArcPoints_(CircleAndLineIntersections(
+      center_, radius_vector_.Length(), point_on_axis, axis_direction));
 }
 
 double Arc::DistanceToPoint(const Point &point) const {
@@ -89,6 +91,23 @@ double Arc::DistanceToPoint(const Point &point) const {
 Vec Arc::NormalAtPoint(const Point &point) const {
   Vec to_point = point - center_;
   return to_point.Normalized();
+}
+
+BoundingBox Arc::GetBoundingBox() const {
+  auto candidates = std::vector<Point>();
+  const auto radius = radius_vector_.Length();
+
+  candidates.push_back(center_ + Vec(0, radius));
+  candidates.push_back(center_ - Vec(0, radius));
+  candidates.push_back(center_ + Vec(radius, 0));
+  candidates.push_back(center_ - Vec(radius, 0));
+
+  candidates.push_back(GetParametricPoint(0));
+  candidates.push_back(GetParametricPoint(Length()));
+
+  const auto filtered_candidates = RetainArcPoints_(std::move(candidates));
+
+  return BoundingBoxFromPoints(filtered_candidates);
 }
 
 std::string Arc::Description() const {
@@ -113,6 +132,18 @@ bool Arc::IsPointOnArc_(const Point &p) const {
       std::fmod(zero_angle - global_angle_of_p + 2 * M_PI, 2 * M_PI);
 
   return local_angle_of_p <= angle_ + EPSILON && local_angle_of_p >= -EPSILON;
+}
+
+std::vector<Point> Arc::RetainArcPoints_(std::vector<Point> points) const {
+  auto retained_points = std::vector<Point>();
+
+  for (const auto &point : points) {
+    if (IsPointOnArc_(point)) {
+      retained_points.push_back(point);
+    }
+  }
+
+  return retained_points;
 }
 
 Point Arc::GetClosestPointOnArc_(const Point &p) const {

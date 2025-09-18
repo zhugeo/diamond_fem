@@ -1,6 +1,8 @@
+#include <gtest/gtest.h>
+
 #include <geometry/core.hpp>
 #include <geometry/line.hpp>
-#include <gtest/gtest.h>
+#include <geometry/vec.hpp>
 
 namespace diamond_fem::geometry {
 

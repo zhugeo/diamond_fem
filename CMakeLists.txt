@@ -43,7 +43,7 @@ endif() # DIAMOND_FEM_BUILD_TESTS
 option(DIAMOND_FEM_BUILD_EXAMPLE "Build example" ON)
 if(DIAMOND_FEM_BUILD_EXAMPLE)
     add_executable(DiamondFEMExample example/main.cpp)
-    target_link_libraries(DiamondFEMExample DiamondFEM)
+    target_link_libraries(DiamondFEMExample DiamondFEM CGAL::CGAL CGAL::CGAL_Qt6 CGAL::CGAL_Basic_viewer)
 endif() # DIAMOND_FEM_BUILD_EXAMPLE
 
 find_package(CGAL REQUIRED COMPONENTS Qt6)

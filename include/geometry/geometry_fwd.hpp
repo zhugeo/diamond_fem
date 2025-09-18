@@ -6,6 +6,7 @@ namespace diamond_fem::geometry {
 class Point;
 class Curve;
 class Vec;
+class BoundingBox;
 
 } // namespace diamond_fem::geometry
 

@@ -1,7 +1,11 @@
-#include <cmath>
-#include <fmt/format.h>
-#include <geometry/core.hpp>
 #include <geometry/line.hpp>
+
+#include <cmath>
+
+#include <fmt/format.h>
+
+#include <geometry/core.hpp>
+#include <geometry/vec.hpp>
 
 namespace diamond_fem::geometry {
 
@@ -68,6 +72,10 @@ double Line::DistanceToPoint(const Point &point) const {
 Vec Line::NormalAtPoint(const Point &point) const {
   const auto direction = p2_ - p1_;
   return Vec(direction.GetY(), -direction.GetX()).Normalized();
+}
+
+BoundingBox Line::GetBoundingBox() const {
+  return BoundingBoxFromPoints({p1_, p2_});
 }
 
 std::string Line::Description() const {
