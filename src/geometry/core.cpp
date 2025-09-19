@@ -43,4 +43,9 @@ bool IsInRange(double x, double a, double b) {
   return x >= std::min(a, b) && x <= std::max(a, b);
 }
 
+bool PointsNear(const Point &p1, const Point &p2) {
+  return std::abs(p1.GetX() - p2.GetX()) < EPSILON &&
+         std::abs(p1.GetY() - p2.GetY()) < EPSILON;
+}
+
 } // namespace diamond_fem::geometry

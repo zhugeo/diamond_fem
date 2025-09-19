@@ -59,22 +59,6 @@ namespace internal {
 std::vector<PointWithBorderInfo>
 DeduplicatePoints(const std::vector<PointWithBorderInfo> &points);
 
-class Interval {
-public:
-  Interval(const PointWithBorderInfo &start_point,
-           const PointWithBorderInfo &end_point,
-           const geometry::Point &point_on_grid_node,
-           const geometry::Vec &direction_step);
-
-  std::vector<PointWithBorderInfo> DoStepping() const;
-
-private:
-  PointWithBorderInfo start_point_;
-  PointWithBorderInfo end_point_;
-  geometry::Point point_on_grid_node_;
-  geometry::Vec direction_step_;
-};
-
 } // namespace internal
 
 } // namespace diamond_fem::meshing

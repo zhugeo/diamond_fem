@@ -7,6 +7,7 @@ class Point;
 class Curve;
 class Vec;
 class BoundingBox;
+class Interval;
 
 } // namespace diamond_fem::geometry
 

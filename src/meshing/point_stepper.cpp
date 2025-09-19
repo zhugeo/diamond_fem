@@ -12,6 +12,7 @@
 #include <analysis_task/border.hpp>
 #include <geometry/core.hpp>
 #include <geometry/curve.hpp>
+#include <geometry/interval.hpp>
 #include <geometry/vec.hpp>
 
 namespace diamond_fem::meshing {
@@ -21,8 +22,8 @@ namespace {
 namespace bg = boost::geometry;
 
 constexpr auto STABILITY_THRESHOLD = 0.02;
-
 constexpr auto BORDER_WIDTH_ALLOWANCE = 0.1;
+constexpr auto MIN_DISTANCE_COEFF_BETWEEN_INNER_AND_OUTER_POINTS = 0.3;
 
 int CeilToInteger(double x) { return static_cast<int>(std::ceil(x)); }
 
@@ -125,64 +126,6 @@ DeduplicatePoints(const std::vector<PointWithBorderInfo> &points) {
   return result;
 }
 
-Interval::Interval(const PointWithBorderInfo &start_point,
-                   const PointWithBorderInfo &end_point,
-                   const geometry::Point &point_on_grid_node,
-                   const geometry::Vec &direction_step)
-    : start_point_(start_point), end_point_(end_point),
-      point_on_grid_node_(point_on_grid_node), direction_step_(direction_step) {
-}
-
-std::vector<PointWithBorderInfo> Interval::DoStepping() const {
-  const auto start_point = start_point_.point;
-  const auto end_point = end_point_.point;
-  const auto segment = geometry::Line(start_point_.point, end_point_.point);
-
-  // if point on grid node is on segment, move it away
-  auto point_on_node = point_on_grid_node_;
-  if (segment.DistanceToPoint(point_on_node) == 0) {
-    point_on_node =
-        point_on_node +
-        direction_step_ *
-            std::ceil(segment.Length() / direction_step_.Length() + 1);
-  }
-
-  const auto d1 = (point_on_node - start_point).Length();
-  const auto d2 = (point_on_node - end_point).Length();
-
-  // p1 is the point nearest to the grid node, p2 is the most far
-  const auto p1 = d1 < d2 ? start_point : end_point;
-  const auto p2 = d1 < d2 ? end_point : start_point;
-
-  // direction_step_ that oriented along stepping direction
-  const auto oriented_direction_step =
-      (p2 - p1).Normalized().DotProduct(direction_step_.Normalized()) *
-      direction_step_;
-
-  const auto first_point = p1 + oriented_direction_step *
-                                    std::ceil((p1 - point_on_node).Length() /
-                                              oriented_direction_step.Length());
-
-  const auto points_count = std::round((p2 - first_point).Length() /
-                                       oriented_direction_step.Length()) +
-                            1;
-
-  auto result = std::vector<PointWithBorderInfo>{
-      start_point_,
-      end_point_,
-  };
-
-  for (int i = 0; i < points_count; i++) {
-    const auto point = first_point + i * oriented_direction_step;
-    result.push_back({
-        .point = point,
-        .border = std::nullopt,
-    });
-  }
-
-  return DeduplicatePoints(result);
-}
-
 } // namespace internal
 
 PointStepper::PointStepper(
@@ -229,11 +172,15 @@ void PointStepper::StepWithLines_(
 void PointStepper::StepWithOneLine_(const geometry::Point &grid_point_on_line,
                                     const geometry::Vec &direction) {
   auto intersections_with_line = std::vector<PointWithBorderInfo>();
+
   const auto calculate_intersections_for_one_border =
       [&](const internal::BorderRef &border) {
         const auto intersections_with_one_border =
             border->curve->GetIntersectionsWithAxis(grid_point_on_line,
                                                     direction);
+
+        // We dont want to see tangent points to circles, because they are
+        // obstruct from interval retrieval
         const auto is_point_stable = [&](const geometry::Point &point) {
           const auto normal_at_point =
               border->curve->NormalAtPoint(point).Normalized();
@@ -241,6 +188,7 @@ void PointStepper::StepWithOneLine_(const geometry::Point &grid_point_on_line,
               std::abs(normal_at_point.DotProduct(direction.Normalized()));
           return cos_angle > STABILITY_THRESHOLD;
         };
+
         intersections_with_line.append_range(
             intersections_with_one_border |
             std::views::filter(is_point_stable) |
@@ -254,9 +202,18 @@ void PointStepper::StepWithOneLine_(const geometry::Point &grid_point_on_line,
   intersections_with_line =
       internal::DeduplicatePoints(intersections_with_line);
 
+  // This poor, but working solution prevents us from case when line touches one
+  // corner of our geometry. Solution is poor because if (line touches corner)
+  // AND (line crosses geometry somewhere else), we couldn't determine what
+  // intervals should we do from those three points
+  if (intersections_with_line.size() == 1) {
+    raw_points_.push_back(intersections_with_line[0]);
+    return;
+  }
+
   if (intersections_with_line.size() % 2) {
     throw std::runtime_error("intersections_with_line should be odd length. "
-                             "May be invalid geometry");
+                             "Try change grid size a little bit");
   }
 
   std::ranges::sort(
@@ -270,10 +227,31 @@ void PointStepper::StepWithOneLine_(const geometry::Point &grid_point_on_line,
     const auto interval_end_point = intersections_with_line[i + 1];
 
     const auto interval =
-        internal::Interval(interval_start_point, interval_end_point,
+        geometry::Interval(interval_start_point.point, interval_end_point.point,
                            grid_point_on_line, direction);
     const auto stepped_interval = interval.DoStepping();
-    raw_points_.append_range(stepped_interval);
+
+    // We don't want narrow triangles in our mesh, so we don't take points from
+    // interval that are close to outer points
+    const auto is_point_far_from_outer = [&](const auto &point) {
+      const auto distance_to_start =
+          (point - interval_start_point.point).Length();
+      const auto distance_to_end = (point - interval_end_point.point).Length();
+      return std::min(distance_to_start, distance_to_end) >
+             triangle_side_length_ *
+                 MIN_DISTANCE_COEFF_BETWEEN_INNER_AND_OUTER_POINTS;
+    };
+
+    const auto enrich_point_with_border_info = [&](const auto &point) {
+      return PointWithBorderInfo{.point = point, .border = std::nullopt};
+    };
+
+    raw_points_.append_range(
+        stepped_interval | std::views::filter(is_point_far_from_outer) |
+        std::views::transform(enrich_point_with_border_info));
+
+    raw_points_.push_back(interval_start_point);
+    raw_points_.push_back(interval_end_point);
   }
 }
 
