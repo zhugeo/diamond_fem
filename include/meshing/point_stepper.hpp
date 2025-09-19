@@ -1,19 +1,16 @@
 #ifndef _DIAMOND_FEM_MESHING_POINT_STEPPER_HPP
 #define _DIAMOND_FEM_MESHING_POINT_STEPPER_HPP
 
-#include <optional>
-
 #include <geometry/geometry_fwd.hpp>
 
 #include <analysis_task/border.hpp>
 #include <geometry/point.hpp>
 #include <geometry/vec.hpp>
+#include <meshing/mesh.hpp>
 
 namespace diamond_fem::meshing {
 
 namespace internal {
-
-using BorderRef = std::shared_ptr<analysis_task::Border>;
 
 // Parameters of stepping with a set of parallel lines
 struct SteppingParameters {
@@ -24,11 +21,6 @@ struct SteppingParameters {
 };
 
 } // namespace internal
-
-struct PointWithBorderInfo {
-  geometry::Point point;
-  std::optional<internal::BorderRef> border;
-};
 
 // PointStepper converts borders of plate into set of points with border info.
 // It is required to do triangulation further.

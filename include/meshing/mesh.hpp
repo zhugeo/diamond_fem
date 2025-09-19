@@ -1,9 +1,20 @@
 #ifndef _DIAMOND_FEM_MESHING_MESH_HPP
 #define _DIAMOND_FEM_MESHING_MESH_HPP
 
-#include <vector>
+#include <optional>
+
+#include <geometry/geometry_fwd.hpp>
+
+#include <analysis_task/border.hpp>
+#include <geometry/point.hpp>
 
 namespace diamond_fem::meshing {
+
+namespace internal {
+
+using BorderRef = std::shared_ptr<analysis_task::Border>;
+
+} // namespace internal
 
 struct PointWithBorderInfo {
   geometry::Point point;
