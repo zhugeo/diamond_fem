@@ -196,6 +196,21 @@ TEST(TestArc, TestDistanceToPoint_ShouldReturnZero_ForPointOnArc) {
   EXPECT_DOUBLE_EQ(distance, 0.0);
 }
 
+TEST(TestArc, TestDistanceToPoint_ShouldReturnRadius_ForPointOnCenter) {
+  // given/when
+  const auto center = Point(0, 0);
+  const auto radius_vector = Vec(1, 0);
+  const auto angle = M_PI / 2;
+  const auto arc = Arc(center, radius_vector, angle);
+  const auto test_point = Point(0, 0);
+
+  // when
+  const auto distance = arc.DistanceToPoint(test_point);
+
+  // then
+  EXPECT_DOUBLE_EQ(distance, 1.0);
+}
+
 TEST(TestArc, TestNormalAtPoint) {
   // given
   const auto center = Point(0, 0);

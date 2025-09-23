@@ -11,32 +11,67 @@
  * Sparsening is done in several passes. Each pass removes points that meet two
  * following conditions:
  * - distance to border is more than min_distance_to_border;
- * - distance to neighbor point is more than min_distance_to_neighbor_point.
+ * - distance to `num_neighbors` neighbor points is less than max_distance_to_neighbor_point.
  */
 
 #include <vector>
 
-#include <geometry/geometry_fwd.hpp>
+#include <boost/geometry.hpp>
+#include <boost/geometry/index/rtree.hpp>
+
+#include <meshing/mesh.hpp>
 
 namespace diamond_fem::meshing {
 
-struct SparsingPass {
+namespace internal {
+
+namespace bg = boost::geometry;
+namespace bgi = boost::geometry::index;
+
+using BoostPoint = bg::model::point<double, 2, bg::cs::cartesian>;
+using RTree = bgi::rtree<BoostPoint, bgi::quadratic<16>>;
+
+bool BoostPointsNear(const internal::BoostPoint &p1,
+                     const internal::BoostPoint &p2);
+
+std::vector<PointWithBorderInfo>
+SortPoints(std::vector<PointWithBorderInfo> points_to_sort);
+
+struct PointWrapper {
+  PointWithBorderInfo point_with_border_info;
+  BoostPoint boost_point;
+  double distance_to_border;
+};
+
+} // namespace internal
+
+struct SparsingPassParameters {
   double min_distance_to_border;
-  double min_distance_to_neighbor_point;
+  double max_distance_to_neighbor_point;
+  int num_neighbors;
 };
 
 struct SparsingParameters {
-  std::vector<SparsingPass> sparsing_passes;
+  std::vector<SparsingPassParameters> sparsing_passes;
 };
 
 class PointSparsener {
 public:
-  PointSparsener(double sparcing_radius);
+  PointSparsener(const SparsingParameters &parameters,
+                 const std::vector<internal::BorderRef> &borders,
+                 std::vector<PointWithBorderInfo> points);
 
-  std::vector<Point> Sparce(const std::vector<Point> &points) const;
+  std::vector<PointWithBorderInfo> Sparse();
 
 private:
-  double sparcing_radius_;
+  void RebuildRTree_();
+  void DoSparsingPass_(const SparsingPassParameters &pass_parameters);
+  bool ShouldRemovePoint_(const internal::PointWrapper &point,
+                          const SparsingPassParameters &pass_parameters);
+
+  SparsingParameters parameters_;
+  std::vector<internal::PointWrapper> points_;
+  internal::RTree rtree_;
 };
 
 } // namespace diamond_fem::meshing
