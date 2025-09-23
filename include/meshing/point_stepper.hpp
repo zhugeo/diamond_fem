@@ -3,6 +3,8 @@
 
 #include <geometry/geometry_fwd.hpp>
 
+#include <vector>
+
 #include <analysis_task/border.hpp>
 #include <geometry/point.hpp>
 #include <geometry/vec.hpp>

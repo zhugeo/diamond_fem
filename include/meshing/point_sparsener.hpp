@@ -16,20 +16,12 @@
 
 #include <vector>
 
-#include <boost/geometry.hpp>
-#include <boost/geometry/index/rtree.hpp>
-
+#include <meshing/internal_boost_rtree.hpp>
 #include <meshing/mesh.hpp>
 
 namespace diamond_fem::meshing {
 
 namespace internal {
-
-namespace bg = boost::geometry;
-namespace bgi = boost::geometry::index;
-
-using BoostPoint = bg::model::point<double, 2, bg::cs::cartesian>;
-using RTree = bgi::rtree<BoostPoint, bgi::quadratic<16>>;
 
 bool BoostPointsNear(const BoostPoint &p1,
                      const BoostPoint &p2);

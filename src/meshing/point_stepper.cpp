@@ -104,7 +104,7 @@ DeduplicatePoints(const std::vector<PointWithBorderInfo> &points) {
   for (const auto &point : points) {
     auto bg_point = Point(point.point.GetX(), point.point.GetY());
 
-    auto search_box =
+    const auto search_box =
         bg::model::box<Point>(Point(point.point.GetX() - geometry::EPSILON,
                                     point.point.GetY() - geometry::EPSILON),
                               Point(point.point.GetX() + geometry::EPSILON,
