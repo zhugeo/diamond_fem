@@ -2,7 +2,6 @@
 #define _DIAMOND_FEM_ANALYSIS_TASK_BORDER_HPP
 
 #include <memory>
-#include <vector>
 
 #include <analysis_task/border_condition.hpp>
 #include <geometry/geometry_fwd.hpp>

@@ -31,8 +31,8 @@ namespace bgi = boost::geometry::index;
 using BoostPoint = bg::model::point<double, 2, bg::cs::cartesian>;
 using RTree = bgi::rtree<BoostPoint, bgi::quadratic<16>>;
 
-bool BoostPointsNear(const internal::BoostPoint &p1,
-                     const internal::BoostPoint &p2);
+bool BoostPointsNear(const BoostPoint &p1,
+                     const BoostPoint &p2);
 
 std::vector<PointWithBorderInfo>
 SortPoints(std::vector<PointWithBorderInfo> points_to_sort);

@@ -13,8 +13,8 @@ namespace diamond_fem::meshing {
 
 namespace internal {
 
-bool BoostPointsNear(const internal::BoostPoint &p1,
-                     const internal::BoostPoint &p2) {
+bool BoostPointsNear(const BoostPoint &p1,
+                     const BoostPoint &p2) {
   return geometry::PointsNear(geometry::Point(p1.get<0>(), p1.get<1>()),
                               geometry::Point(p2.get<0>(), p2.get<1>()));
 }
