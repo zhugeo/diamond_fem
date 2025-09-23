@@ -26,7 +26,7 @@ public:
   Vec operator*(double scalar) const;
 
   friend Vec operator*(double scalar, const Vec &vec);
-  friend std::ostream& operator<<(std::ostream& os, const Vec& vec);
+  friend std::ostream &operator<<(std::ostream &os, const Vec &vec);
 
 private:
   double x_;

@@ -1,13 +1,14 @@
 #include <algorithm>
-#include <gtest/gtest.h>
 #include <ranges>
+#include <vector>
+
+#include <gtest/gtest.h>
 
 #include <geometry/arc.hpp>
 #include <geometry/line.hpp>
 #include <geometry/point.hpp>
 #include <meshing/constraint_connector.hpp>
 #include <meshing/mesh.hpp>
-#include <vector>
 
 namespace diamond_fem::meshing {
 
@@ -39,6 +40,7 @@ std::vector<Constraint> SortConstraints(std::vector<Constraint> constraints) {
                std::make_tuple(rhs.start_point_idx, rhs.end_point_idx,
                                rhs.border_idx);
       });
+
   return std::move(transformed_constraints);
 }
 

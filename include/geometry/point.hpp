@@ -23,7 +23,7 @@ public:
 
   double DistanceTo(const Point &other) const;
 
-  friend std::ostream& operator<<(std::ostream& os, const Point& point);
+  friend std::ostream &operator<<(std::ostream &os, const Point &point);
 
 private:
   double x_;

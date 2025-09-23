@@ -7,12 +7,11 @@
 #include <geometry/point.hpp>
 #include <geometry/vec.hpp>
 
-namespace diamond_fem::geometry{
+namespace diamond_fem::geometry {
 
 class Interval {
 public:
-  Interval(const Point &start_point,
-           const Point &end_point,
+  Interval(const Point &start_point, const Point &end_point,
            const geometry::Point &point_on_grid_node,
            const geometry::Vec &direction_step);
 
@@ -25,6 +24,6 @@ private:
   geometry::Vec direction_step_;
 };
 
-}//namespace diamond_fem::geometry
+} // namespace diamond_fem::geometry
 
 #endif

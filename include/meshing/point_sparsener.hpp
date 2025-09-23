@@ -11,7 +11,8 @@
  * Sparsening is done in several passes. Each pass removes points that meet two
  * following conditions:
  * - distance to border is more than min_distance_to_border;
- * - distance to `num_neighbors` neighbor points is less than max_distance_to_neighbor_point.
+ * - distance to `num_neighbors` neighbor points is less than
+ max_distance_to_neighbor_point.
  */
 
 #include <vector>
@@ -23,8 +24,7 @@ namespace diamond_fem::meshing {
 
 namespace internal {
 
-bool BoostPointsNear(const BoostPoint &p1,
-                     const BoostPoint &p2);
+bool BoostPointsNear(const BoostPoint &p1, const BoostPoint &p2);
 
 std::vector<PointWithBorderInfo>
 SortPoints(std::vector<PointWithBorderInfo> points_to_sort);
