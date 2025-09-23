@@ -6,6 +6,7 @@
 
 #include <geometry/core.hpp>
 #include <geometry/curve.hpp>
+#include <geometry/vec.hpp>
 #include <meshing/internal_boost_rtree.hpp>
 
 namespace diamond_fem::meshing {
@@ -71,8 +72,8 @@ void ConstraintConnector::IndexateBorderStartPoints_() {
   for (auto border_idx = 0; border_idx < borders_.size(); border_idx++) {
     const auto &curve = *(borders_[border_idx]->curve);
     const auto start_point = curve.GetParametricPoint(0);
-    const auto boost_start_point = internal::BoostPoint{start_point.GetX(),
-                                                        start_point.GetY()};
+    const auto boost_start_point =
+        internal::BoostPoint{start_point.GetX(), start_point.GetY()};
     border_start_points_.push_back(start_point);
     rtree_.insert(std::make_pair(boost_start_point, border_idx));
   }
@@ -99,6 +100,30 @@ void ConstraintConnector::ConnectAdjacentBorders_() {
                       "for border {}",
                       overlapping_start_points.size(), curve.Description()));
     }
+    const auto overlapped_border_idx = overlapping_start_points[0].second;
+
+    const auto nearest_border_1_point_idx =
+        points_on_border_[border_idx].back();
+    const auto nearest_border_1_point =
+        points_[nearest_border_1_point_idx].point;
+
+    const auto nearest_border_2_point_idx =
+        points_on_border_[overlapped_border_idx].front();
+    const auto nearest_border_2_point =
+        points_[nearest_border_2_point_idx].point;
+
+    // Here we define, which border would include this constraint
+    const auto constraint_border_idx =
+        (end_point - nearest_border_1_point).Length() <
+                (nearest_border_2_point - end_point).Length()
+            ? border_idx
+            : overlapped_border_idx;
+
+    constraints_.push_back(Constraint{
+        .start_point_idx = nearest_border_1_point_idx,
+        .end_point_idx = nearest_border_2_point_idx,
+        .border_idx = border_idx,
+    });
   }
 }
 
