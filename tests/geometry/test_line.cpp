@@ -128,6 +128,16 @@ TEST(TestLine, TestDescription) {
   EXPECT_EQ(line.Description(), "Line(Point(0, 0), Point(1, 1))");
 }
 
+TEST(TestLine, TestGetPointParameter) {
+  // given/when
+  const auto line = Line(Point(0, 0), Point(1, 1));
+
+  // then
+  EXPECT_EQ(line.GetPointParameter(Point(0, 0)), 0);
+  EXPECT_EQ(line.GetPointParameter(Point(1, 1)), std::sqrt(2));
+  EXPECT_EQ(line.GetPointParameter(Point(0.5, 0.5)), std::sqrt(2) / 2);
+}
+
 } // namespace
 
 } // namespace diamond_fem::geometry

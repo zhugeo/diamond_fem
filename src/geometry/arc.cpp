@@ -116,6 +116,19 @@ std::string Arc::Description() const {
                      radius_vector_.GetY(), angle_);
 }
 
+double Arc::GetPointParameter(const Point &point) const {
+  const auto v = point - center_;
+
+  const auto global_angle_of_point =
+      std::atan2(radius_vector_.GetY(), radius_vector_.GetX());
+  const auto zero_angle = std::atan2(v.GetY(), v.GetX());
+
+  const auto local_angle_of_point =
+      std::fmod(zero_angle - global_angle_of_point + 2 * M_PI, 2 * M_PI);
+
+  return radius_vector_.Length() * local_angle_of_point;
+}
+
 bool Arc::IsPointOnArc_(const Point &p) const {
   const auto radius = radius_vector_.Length();
   const auto v = p - center_;

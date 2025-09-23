@@ -83,4 +83,8 @@ std::string Line::Description() const {
                      p1_.GetY(), p2_.GetX(), p2_.GetY());
 }
 
+double Line::GetPointParameter(const Point &point) const {
+  return (p1_ - point).Length();
+}
+
 } // namespace diamond_fem::geometry

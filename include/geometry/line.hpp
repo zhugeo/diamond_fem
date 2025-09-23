@@ -21,6 +21,7 @@ public:
   virtual Vec NormalAtPoint(const Point &point) const override;
   virtual BoundingBox GetBoundingBox() const override;
   virtual std::string Description() const override;
+  virtual double GetPointParameter(const Point &point) const override;
 
 private:
   Point p1_;

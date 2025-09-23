@@ -24,6 +24,7 @@ public:
   virtual Vec NormalAtPoint(const Point &point) const = 0;
   virtual BoundingBox GetBoundingBox() const = 0;
   virtual std::string Description() const = 0;
+  virtual double GetPointParameter(const Point &point) const = 0;
 };
 
 } // namespace diamond_fem::geometry

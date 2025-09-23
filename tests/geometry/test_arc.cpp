@@ -240,6 +240,18 @@ TEST(TestArc, TestDescription) {
   EXPECT_EQ(description, "Arc(Point(0, 0), Vec(1, 0), 1.5707963267948966)");
 }
 
+TEST(TestArc, TestGetPointParameter) {
+  // given/when
+  const auto center = Point(0, 0);
+  const auto radius_vector = Vec(1, 0);
+  const auto arc = Arc(center, radius_vector, M_PI);
+
+  // then
+  EXPECT_DOUBLE_EQ(arc.GetPointParameter(Point(1, 0)), 0.0);
+  EXPECT_DOUBLE_EQ(arc.GetPointParameter(Point(0, 1)), M_PI / 2);
+  EXPECT_DOUBLE_EQ(arc.GetPointParameter(Point(-1, 0)), M_PI);
+}
+
 } // namespace
 
 } // namespace diamond_fem::geometry
