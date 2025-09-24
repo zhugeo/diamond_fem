@@ -47,12 +47,12 @@ std::vector<Constraint> SortConstraints(std::vector<Constraint> constraints) {
 TEST(TestConstraintConnector, ShouldConnectBorderPoints) {
   // given
   const auto borders = std::vector{
-      std::make_shared<analysis_task::Border>(analysis_task::Border{
+      std::make_shared<const analysis_task::Border>(analysis_task::Border{
           .border_condition = {},
           .curve = std::make_shared<geometry::Line>(geometry::Point{-1, 0},
                                                     geometry::Point{1, 0}),
       }),
-      std::make_shared<analysis_task::Border>(analysis_task::Border{
+      std::make_shared<const analysis_task::Border>(analysis_task::Border{
           .border_condition = {},
           .curve = std::make_shared<geometry::Arc>(geometry::Point{0, 0},
                                                    geometry::Vec{1, 0}, M_PI),

@@ -40,7 +40,7 @@ const auto AssertResultIsExpected(std::vector<geometry::Point> result,
 
 TEST(TestPointStepper, TestPointStepper_ShouldStepRectangle) {
   // given
-  using Border = analysis_task::Border;
+  using Border = const analysis_task::Border;
   const auto side_1 = std::make_shared<geometry::Line>(geometry::Point(1, 1),
                                                        geometry::Point(1, 4));
   const auto side_2 = std::make_shared<geometry::Line>(geometry::Point(1, 4),

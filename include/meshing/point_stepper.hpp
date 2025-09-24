@@ -30,7 +30,7 @@ struct SteppingParameters {
 // internal shapes should be equilateral triangles
 class PointStepper {
 public:
-  PointStepper(std::vector<std::shared_ptr<analysis_task::Border>> borders,
+  PointStepper(std::vector<internal::BorderRef> borders,
                double triangle_side_length);
   std::vector<PointWithBorderInfo> Step();
 

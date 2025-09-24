@@ -1,5 +1,3 @@
-#include "geometry/line.hpp"
-#include "geometry/point.hpp"
 #include <meshing/point_stepper.hpp>
 
 #include <algorithm>
@@ -13,7 +11,10 @@
 #include <geometry/core.hpp>
 #include <geometry/curve.hpp>
 #include <geometry/interval.hpp>
+#include <geometry/line.hpp>
+#include <geometry/point.hpp>
 #include <geometry/vec.hpp>
+#include <meshing/mesh.hpp>
 
 namespace diamond_fem::meshing {
 
@@ -128,9 +129,8 @@ DeduplicatePoints(const std::vector<PointWithBorderInfo> &points) {
 
 } // namespace internal
 
-PointStepper::PointStepper(
-    std::vector<std::shared_ptr<analysis_task::Border>> borders,
-    double triangle_side_length)
+PointStepper::PointStepper(std::vector<internal::BorderRef> borders,
+                           double triangle_side_length)
     : borders_(borders), triangle_side_length_(triangle_side_length) {}
 
 std::vector<PointWithBorderInfo> PointStepper::Step() {

@@ -63,7 +63,7 @@ TEST(TestPointSparsener, ShouldPreservePointsNearBorder) {
       PointWithBorderInfo{Point{1.1, 1.5}, std::nullopt},
   };
   const auto borders = std::vector{
-      std::make_shared<analysis_task::Border>(analysis_task::Border{
+      std::make_shared<const analysis_task::Border>(analysis_task::Border{
           .curve = std::make_shared<geometry::Line>(Point(0, 0), Point(0, 4))}),
   };
   const auto pass_params = SparsingPassParameters{

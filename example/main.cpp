@@ -16,36 +16,46 @@ using namespace df::geometry;
 
 int main() {
   const auto borders = std::vector{
-      std::make_shared<df::analysis_task::Border>(df::analysis_task::Border{
-          .border_condition =
-              {.type = df::analysis_task::BorderConditionType::ConstTemperature,
-               .value = 0},
-          .curve = std::make_shared<Line>(Point(-5, 0), Point(0, 0)),
-      }),
-      std::make_shared<df::analysis_task::Border>(df::analysis_task::Border{
-          .border_condition =
-              {.type = df::analysis_task::BorderConditionType::ConstTemperature,
-               .value = 0},
-          .curve = std::make_shared<Line>(Point(0, -5), Point(0, 0)),
-      }),
-      std::make_shared<df::analysis_task::Border>(df::analysis_task::Border{
-          .border_condition =
-              {.type = df::analysis_task::BorderConditionType::ConstTemperature,
-               .value = 0},
-          .curve = std::make_shared<Line>(Point(-5, 0), Point(0, 5)),
-      }),
-      std::make_shared<df::analysis_task::Border>(df::analysis_task::Border{
-          .border_condition =
-              {.type = df::analysis_task::BorderConditionType::ConstTemperature,
-               .value = 0},
-          .curve = std::make_shared<Line>(Point(0, -5), Point(5, 0)),
-      }),
-      std::make_shared<df::analysis_task::Border>(df::analysis_task::Border{
-          .border_condition =
-              {.type = df::analysis_task::BorderConditionType::ConstTemperature,
-               .value = 0},
-          .curve = std::make_shared<Arc>(Point(0, 0), Vec(5, 0), M_PI / 2),
-      }),
+      std::make_shared<const df::analysis_task::Border>(
+          df::analysis_task::Border{
+              .border_condition =
+                  {.type =
+                       df::analysis_task::BorderConditionType::ConstTemperature,
+                   .value = 0},
+              .curve = std::make_shared<Line>(Point(-5, 0), Point(0, 0)),
+          }),
+      std::make_shared<const df::analysis_task::Border>(
+          df::analysis_task::Border{
+              .border_condition =
+                  {.type =
+                       df::analysis_task::BorderConditionType::ConstTemperature,
+                   .value = 0},
+              .curve = std::make_shared<Line>(Point(0, -5), Point(0, 0)),
+          }),
+      std::make_shared<const df::analysis_task::Border>(
+          df::analysis_task::Border{
+              .border_condition =
+                  {.type =
+                       df::analysis_task::BorderConditionType::ConstTemperature,
+                   .value = 0},
+              .curve = std::make_shared<Line>(Point(-5, 0), Point(0, 5)),
+          }),
+      std::make_shared<const df::analysis_task::Border>(
+          df::analysis_task::Border{
+              .border_condition =
+                  {.type =
+                       df::analysis_task::BorderConditionType::ConstTemperature,
+                   .value = 0},
+              .curve = std::make_shared<Line>(Point(0, -5), Point(5, 0)),
+          }),
+      std::make_shared<const df::analysis_task::Border>(
+          df::analysis_task::Border{
+              .border_condition =
+                  {.type =
+                       df::analysis_task::BorderConditionType::ConstTemperature,
+                   .value = 0},
+              .curve = std::make_shared<Arc>(Point(0, 0), Vec(5, 0), M_PI / 2),
+          }),
   };
 
   const auto sparse_steps = std::vector{
