@@ -9,8 +9,8 @@
 namespace diamond_fem::analysis_task {
 
 struct Border {
-  std::shared_ptr<const BorderCondition> border_condition;
-  std::shared_ptr<const geometry::Curve> curve;
+  const BorderCondition border_condition;
+  const std::shared_ptr<geometry::Curve> curve;
 };
 
 } // namespace diamond_fem::analysis_task

@@ -11,11 +11,23 @@ namespace internal {
 namespace bg = boost::geometry;
 namespace bgi = boost::geometry::index;
 
+enum class PointType { kEnd, kStart };
+
+struct BorderInfo {
+  int border_idx;
+  PointType type;
+};
+
 using BoostPoint = bg::model::point<double, 2, bg::cs::cartesian>;
 using RTree = bgi::rtree<BoostPoint, bgi::quadratic<16>>;
-using BoostPointWithBorderIndex = std::pair<BoostPoint, int>;
-using RTreeWithBorderIndex =
-    bgi::rtree<BoostPointWithBorderIndex, bgi::quadratic<16>>;
+
+using BoostPointWithBorderInfo = std::pair<BoostPoint, BorderInfo>;
+using RTreeWithBorderInfo =
+    bgi::rtree<BoostPointWithBorderInfo, bgi::quadratic<16>>;
+
+using BoostPointWithPointIdx = std::pair<BoostPoint, int>;
+using RTreeWithPointIdx =
+    bgi::rtree<BoostPointWithPointIdx, bgi::quadratic<16>>;
 
 } // namespace internal
 

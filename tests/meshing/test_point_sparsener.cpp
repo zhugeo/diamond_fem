@@ -42,8 +42,7 @@ TEST(TestPointSparsener, ShouldSparsenPoints) {
       .max_distance_to_neighbor_point = 1.0,
       .num_neighbors = 2,
   };
-  auto point_sparsener =
-      PointSparsener({.sparsing_passes = {pass_params}}, {}, points);
+  auto point_sparsener = PointSparsener({pass_params}, {}, points);
 
   const auto expected_points = std::vector{points[0], points[2], points[4]};
 
@@ -72,8 +71,7 @@ TEST(TestPointSparsener, ShouldPreservePointsNearBorder) {
       .max_distance_to_neighbor_point = 1.0,
       .num_neighbors = 2,
   };
-  auto point_sparsener =
-      PointSparsener({.sparsing_passes = {pass_params}}, borders, points);
+  auto point_sparsener = PointSparsener({pass_params}, borders, points);
 
   const auto expected_points =
       std::vector{points[0], points[1], points[2], points[3]};
@@ -83,18 +81,6 @@ TEST(TestPointSparsener, ShouldPreservePointsNearBorder) {
 
   // then
   ASSERT_EQ(ExtractPoints(sparsed_points), ExtractPoints(expected_points));
-}
-
-TEST(TestPointSparsener, ShouldPreservePointsNearToBorder) {
-  // given
-  // when
-  // then
-}
-
-TEST(TestPointSparsener, ShouldNotRemoveBorderPoints) {
-  // given
-  // when
-  // then
 }
 
 TEST(TestPointSparsener, TestBoostPointsNear) {

@@ -48,12 +48,12 @@ TEST(TestConstraintConnector, ShouldConnectBorderPoints) {
   // given
   const auto borders = std::vector{
       std::make_shared<analysis_task::Border>(analysis_task::Border{
-          .border_condition = nullptr,
+          .border_condition = {},
           .curve = std::make_shared<geometry::Line>(geometry::Point{-1, 0},
                                                     geometry::Point{1, 0}),
       }),
       std::make_shared<analysis_task::Border>(analysis_task::Border{
-          .border_condition = nullptr,
+          .border_condition = {},
           .curve = std::make_shared<geometry::Arc>(geometry::Point{0, 0},
                                                    geometry::Vec{1, 0}, M_PI),
       }),
@@ -67,7 +67,7 @@ TEST(TestConstraintConnector, ShouldConnectBorderPoints) {
       MakePointWithBorderInfo(0, 0.5, std::nullopt),
   };
   const auto expected_constraints = SortConstraints(std::vector<Constraint>{
-      {.start_point_idx = 1, .end_point_idx = 2, .border_idx = 0},
+      {.start_point_idx = 1, .end_point_idx = 2, .border_idx = 1},
       {.start_point_idx = 0, .end_point_idx = 3, .border_idx = 1},
       {.start_point_idx = 0, .end_point_idx = 1, .border_idx = 0},
       {.start_point_idx = 2, .end_point_idx = 3, .border_idx = 1},

@@ -1,73 +1,81 @@
-#include <fstream>
-#include <iostream>
 #include <memory>
 #include <vector>
+
+#include <CGAL/draw_triangulation_2.h>
 
 #include <analysis_task/border.hpp>
 #include <analysis_task/border_condition.hpp>
 #include <geometry/arc.hpp>
 #include <geometry/line.hpp>
+#include <meshing/point_sparsener.hpp>
 #include <meshing/point_stepper.hpp>
-
-
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/point.hpp>
-#include <boost/geometry/index/rtree.hpp>
-#include <vector>
-#include <iostream>
-
-namespace bg = boost::geometry;
-namespace bgi = boost::geometry::index;
-
-// Определяем тип точки
-typedef bg::model::point<float, 2, bg::cs::cartesian> point;
-
-// Тип значения для хранения в дереве
-// Можно хранить только точки или пары <точка, доп.данные>
-typedef std::pair<point, unsigned> value;
-
+#include <meshing/triangulator.hpp>
 
 namespace df = diamond_fem;
-
-// int main() {
-//   auto borders = std::vector<std::shared_ptr<df::analysis_task::Border>>();
-
-//   borders.push_back(std::make_shared<df::analysis_task::Border>(
-//       std::make_shared<df::analysis_task::BorderConditionConstant>(0.0),
-//       std::make_shared<df::geometry::Line>(df::geometry::Point{0.0, 0.0},
-//                                            df::geometry::Point{1.0, 1.0})));
-
-//   //auto stepper = df::meshing::PointStepper(std::move(borders));
-
-//   // const auto points = stepper.Step();
-
-//   // auto out = std::ofstream("out.txt");
-//   // for (const auto &point : points) {
-//   //   out << point.point.GetX() << " " << point.point.GetY() << std::endl;
-//   // }
-//   // out.close();
-// }
+using namespace df::geometry;
 
 int main() {
-  // Создаем R-tree
-  bgi::rtree<value, bgi::quadratic<16>> rtree;
+  const auto borders = std::vector{
+      std::make_shared<df::analysis_task::Border>(df::analysis_task::Border{
+          .border_condition =
+              {.type = df::analysis_task::BorderConditionType::ConstTemperature,
+               .value = 0},
+          .curve = std::make_shared<Line>(Point(-5, 0), Point(0, 0)),
+      }),
+      std::make_shared<df::analysis_task::Border>(df::analysis_task::Border{
+          .border_condition =
+              {.type = df::analysis_task::BorderConditionType::ConstTemperature,
+               .value = 0},
+          .curve = std::make_shared<Line>(Point(0, -5), Point(0, 0)),
+      }),
+      std::make_shared<df::analysis_task::Border>(df::analysis_task::Border{
+          .border_condition =
+              {.type = df::analysis_task::BorderConditionType::ConstTemperature,
+               .value = 0},
+          .curve = std::make_shared<Line>(Point(-5, 0), Point(0, 5)),
+      }),
+      std::make_shared<df::analysis_task::Border>(df::analysis_task::Border{
+          .border_condition =
+              {.type = df::analysis_task::BorderConditionType::ConstTemperature,
+               .value = 0},
+          .curve = std::make_shared<Line>(Point(0, -5), Point(5, 0)),
+      }),
+      std::make_shared<df::analysis_task::Border>(df::analysis_task::Border{
+          .border_condition =
+              {.type = df::analysis_task::BorderConditionType::ConstTemperature,
+               .value = 0},
+          .curve = std::make_shared<Arc>(Point(0, 0), Vec(5, 0), M_PI / 2),
+      }),
+  };
 
-  // Заполняем данными
-  for (unsigned i = 0; i < 10; ++i) {
-    point p(i + 0.0f, i + 0.5f);
-    rtree.insert(std::make_pair(p, i));
-  }
+  const auto sparse_steps = std::vector{
+      df::meshing::SparsingPassParameters{
+          .min_distance_to_border = 1.3,
+          .max_distance_to_neighbor_point = 0.55,
+          .num_neighbors = 3,
+      },
+  };
 
-  // Ищем ближайшие точки
-  std::vector<value> nearest;
-  rtree.query(bgi::nearest(point(0, 0), 3), std::back_inserter(nearest));
+  constexpr auto TSL = 0.55;
 
-  // Выводим результаты
-  std::cout << "Ближайшие точки:" << std::endl;
-  for (const auto &v : nearest) {
-    std::cout << "Точка: " << bg::wkt(v.first) << " ID: " << v.second
-              << std::endl;
-  }
+  auto point_stepper = df::meshing::PointStepper(borders, TSL);
+  const auto dense_points = point_stepper.Step();
+
+  auto point_sparsener =
+      df::meshing::PointSparsener(sparse_steps, borders, dense_points);
+  const auto sparse_points = point_sparsener.Sparse();
+
+  auto constraint_connector =
+      df::meshing::ConstraintConnector(sparse_points, borders);
+  const auto constraints = constraint_connector.Connect();
+
+  auto triangulator =
+      df::meshing::Triangulator(sparse_points, borders, constraints);
+  triangulator.BuildTriangulation();
+  const auto triangulation = triangulator.GetTriangulation();
+
+  // Draw the triangulation
+  CGAL::draw(triangulation);
 
   return 0;
 }

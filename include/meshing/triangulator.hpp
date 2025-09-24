@@ -1,0 +1,61 @@
+#ifndef _DIAMOND_FEM_MESHING_TRIANGULATOR_HPP
+#define _DIAMOND_FEM_MESHING_TRIANGULATOR_HPP
+
+#include <CGAL/Constrained_Delaunay_triangulation_2.h>
+#include <CGAL/Delaunay_triangulation_2.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/draw_triangulation_2.h>
+
+#include <meshing/constraint_connector.hpp>
+#include <meshing/internal_boost_rtree.hpp>
+#include <meshing/mesh.hpp>
+
+namespace diamond_fem::meshing {
+
+namespace internal {
+
+using K = CGAL::Exact_predicates_inexact_constructions_kernel;
+using Triangulation = CGAL::Constrained_Delaunay_triangulation_2<K>;
+using CGALPoint = Triangulation::Point;
+
+using Unconstrained_Triangulation = CGAL::Delaunay_triangulation_2<K>;
+
+enum class RawTriangleState { kInner, kOuter, kUnknown };
+
+struct RawTriangle {
+  int p_1_idx;
+  int p_2_idx;
+  int p_3_idx;
+  RawTriangleState state = RawTriangleState::kUnknown;
+};
+
+} // namespace internal
+
+class Triangulator {
+public:
+  Triangulator(std::vector<PointWithBorderInfo> points,
+               std::vector<internal::BorderRef> borders,
+               std::vector<Constraint> constraints);
+
+  void BuildTriangulation();
+  internal::Triangulation GetTriangulation() const;
+  Mesh BuildMesh();
+
+private:
+  void LoadConstraints_();
+  void LoadPoints_();
+  void ExtractTrianglesFromTriangulation_();
+  void FillRTreeIndex_();
+  int GetPointIndex_(const geometry::Point &point) const;
+
+  std::vector<PointWithBorderInfo> points_;
+  std::vector<internal::BorderRef> borders_;
+  std::vector<Constraint> constraints_;
+  std::vector<MeshTriangle> triangles_;
+  internal::Triangulation triangulation_;
+  internal::RTreeWithPointIdx rtree_;
+};
+
+} // namespace diamond_fem::meshing
+
+#endif // _DIAMOND_FEM_MESHING_TRIANGULATOR_HPP

@@ -26,8 +26,11 @@ private:
   void GroupPointsOnBorders_();
   void ConnectContiguousPoints_();
   void ConnectPointsOnOneBorder_(int border_idx);
-  void IndexateBorderStartPoints_();
+  void IndexateBorderStartAndEndPoints_();
   void ConnectAdjacentBorders_();
+  void ConnectAdjacentBordersToPoint_(const geometry::Point &point,
+                                      int border_idx,
+                                      internal::PointType point_type);
 
   std::vector<PointWithBorderInfo> points_;
   std::vector<internal::BorderRef> borders_;
@@ -37,8 +40,7 @@ private:
       points_on_border_; // points_on_border_[i][j] is an index j-th point
                          // (ordered ascending by parameter) on borders[i]
 
-  std::vector<geometry::Point> border_start_points_;
-  internal::RTreeWithBorderIndex rtree_;
+  internal::RTreeWithBorderInfo rtree_;
 
   std::vector<Constraint> constraints_;
 };

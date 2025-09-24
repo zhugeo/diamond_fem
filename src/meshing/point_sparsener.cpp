@@ -13,8 +13,7 @@ namespace diamond_fem::meshing {
 
 namespace internal {
 
-bool BoostPointsNear(const BoostPoint &p1,
-                     const BoostPoint &p2) {
+bool BoostPointsNear(const BoostPoint &p1, const BoostPoint &p2) {
   return geometry::PointsNear(geometry::Point(p1.get<0>(), p1.get<1>()),
                               geometry::Point(p2.get<0>(), p2.get<1>()));
 }
@@ -31,10 +30,11 @@ SortPoints(std::vector<PointWithBorderInfo> points_to_sort) {
 
 } // namespace internal
 
-PointSparsener::PointSparsener(const SparsingParameters &parameters,
-                               const std::vector<internal::BorderRef> &borders,
-                               std::vector<PointWithBorderInfo> points)
-    : parameters_(parameters) {
+PointSparsener::PointSparsener(
+    const std::vector<SparsingPassParameters> &sparsing_passes_parameters,
+    const std::vector<internal::BorderRef> &borders,
+    std::vector<PointWithBorderInfo> points)
+    : parameters_(sparsing_passes_parameters) {
 
   const auto calculate_distance_to_border = [&](const auto &point) {
     auto distance = std::numeric_limits<double>::max();
@@ -63,7 +63,7 @@ PointSparsener::PointSparsener(const SparsingParameters &parameters,
 }
 
 std::vector<PointWithBorderInfo> PointSparsener::Sparse() {
-  for (const auto &pass_parameters : parameters_.sparsing_passes) {
+  for (const auto &pass_parameters : parameters_) {
     DoSparsingPass_(pass_parameters);
   }
   return std::move(points_) | std::views::transform([](auto wrapped_point) {
@@ -112,10 +112,6 @@ void PointSparsener::DoSparsingPass_(
 bool PointSparsener::ShouldRemovePoint_(
     const internal::PointWrapper &point,
     const SparsingPassParameters &pass_parameters) {
-
-  if (point.point_with_border_info.border.has_value()) {
-    return false;
-  }
 
   if (point.distance_to_border < pass_parameters.min_distance_to_border) {
     return false;

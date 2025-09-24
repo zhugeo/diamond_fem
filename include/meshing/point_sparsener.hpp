@@ -43,15 +43,12 @@ struct SparsingPassParameters {
   int num_neighbors;
 };
 
-struct SparsingParameters {
-  std::vector<SparsingPassParameters> sparsing_passes;
-};
-
 class PointSparsener {
 public:
-  PointSparsener(const SparsingParameters &parameters,
-                 const std::vector<internal::BorderRef> &borders,
-                 std::vector<PointWithBorderInfo> points);
+  PointSparsener(
+      const std::vector<SparsingPassParameters> &sparsing_passes_parameters,
+      const std::vector<internal::BorderRef> &borders,
+      std::vector<PointWithBorderInfo> points);
 
   std::vector<PointWithBorderInfo> Sparse();
 
@@ -61,7 +58,7 @@ private:
   bool ShouldRemovePoint_(const internal::PointWrapper &point,
                           const SparsingPassParameters &pass_parameters);
 
-  SparsingParameters parameters_;
+  std::vector<SparsingPassParameters> parameters_;
   std::vector<internal::PointWrapper> points_;
   internal::RTree rtree_;
 };

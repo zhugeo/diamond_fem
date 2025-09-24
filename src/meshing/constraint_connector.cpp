@@ -1,5 +1,6 @@
 #include <meshing/constraint_connector.hpp>
 
+#include <ranges>
 #include <stdexcept>
 
 #include <fmt/format.h>
@@ -21,7 +22,7 @@ ConstraintConnector::ConstraintConnector(
 std::vector<Constraint> ConstraintConnector::Connect() {
   GroupPointsOnBorders_();
   ConnectContiguousPoints_();
-  IndexateBorderStartPoints_();
+  IndexateBorderStartAndEndPoints_();
   ConnectAdjacentBorders_();
 
   return std::move(constraints_);
@@ -68,63 +69,114 @@ void ConstraintConnector::ConnectPointsOnOneBorder_(int border_idx) {
   }
 }
 
-void ConstraintConnector::IndexateBorderStartPoints_() {
+void ConstraintConnector::IndexateBorderStartAndEndPoints_() {
   for (auto border_idx = 0; border_idx < borders_.size(); border_idx++) {
     const auto &curve = *(borders_[border_idx]->curve);
     const auto start_point = curve.GetParametricPoint(0);
+    const auto end_point = curve.GetParametricPoint(curve.Length());
+
     const auto boost_start_point =
         internal::BoostPoint{start_point.GetX(), start_point.GetY()};
-    border_start_points_.push_back(start_point);
-    rtree_.insert(std::make_pair(boost_start_point, border_idx));
+    const auto boost_end_point =
+        internal::BoostPoint{end_point.GetX(), end_point.GetY()};
+
+    rtree_.insert(std::make_pair(
+        boost_start_point,
+        internal::BorderInfo{.border_idx = border_idx,
+                             .type = internal::PointType::kStart}));
+    rtree_.insert(std::make_pair(
+        boost_end_point,
+        internal::BorderInfo{.border_idx = border_idx,
+                             .type = internal::PointType::kEnd}));
   }
 }
 
 void ConstraintConnector::ConnectAdjacentBorders_() {
   for (auto border_idx = 0; border_idx < borders_.size(); border_idx++) {
     const auto &curve = *(borders_[border_idx]->curve);
+
+    const auto start_point = curve.GetParametricPoint(0);
     const auto end_point = curve.GetParametricPoint(curve.Length());
 
-    const auto search_box = internal::bg::model::box<internal::BoostPoint>{
-        internal::BoostPoint{end_point.GetX() - geometry::EPSILON,
-                             end_point.GetY() - geometry::EPSILON},
-        internal::BoostPoint{end_point.GetX() + geometry::EPSILON,
-                             end_point.GetY() + geometry::EPSILON},
-    };
-    auto overlapping_start_points =
-        std::vector<internal::BoostPointWithBorderIndex>{};
-    rtree_.query(internal::bgi::intersects(search_box),
-                 std::back_inserter(overlapping_start_points));
-    if (overlapping_start_points.size() != 1) {
-      throw std::runtime_error(
-          fmt::format("Found {} border start points overlapping with end point "
-                      "for border {}",
-                      overlapping_start_points.size(), curve.Description()));
-    }
-    const auto overlapped_border_idx = overlapping_start_points[0].second;
-
-    const auto nearest_border_1_point_idx =
-        points_on_border_[border_idx].back();
-    const auto nearest_border_1_point =
-        points_[nearest_border_1_point_idx].point;
-
-    const auto nearest_border_2_point_idx =
-        points_on_border_[overlapped_border_idx].front();
-    const auto nearest_border_2_point =
-        points_[nearest_border_2_point_idx].point;
-
-    // Here we define, which border would include this constraint
-    const auto constraint_border_idx =
-        (end_point - nearest_border_1_point).Length() <
-                (nearest_border_2_point - end_point).Length()
-            ? border_idx
-            : overlapped_border_idx;
-
-    constraints_.push_back(Constraint{
-        .start_point_idx = nearest_border_1_point_idx,
-        .end_point_idx = nearest_border_2_point_idx,
-        .border_idx = border_idx,
-    });
+    ConnectAdjacentBordersToPoint_(start_point, border_idx,
+                                   internal::PointType::kStart);
+    ConnectAdjacentBordersToPoint_(end_point, border_idx,
+                                   internal::PointType::kEnd);
   }
+}
+
+void ConstraintConnector::ConnectAdjacentBordersToPoint_(
+    const geometry::Point &point, int border_idx,
+    internal::PointType point_type) {
+  const auto search_box = internal::bg::model::box<internal::BoostPoint>{
+      internal::BoostPoint{point.GetX() - geometry::EPSILON,
+                           point.GetY() - geometry::EPSILON},
+      internal::BoostPoint{point.GetX() + geometry::EPSILON,
+                           point.GetY() + geometry::EPSILON},
+  };
+
+  auto overlapping_points_with_template_point =
+      std::vector<internal::BoostPointWithBorderInfo>{};
+  rtree_.query(internal::bgi::intersects(search_box),
+               std::back_inserter(overlapping_points_with_template_point));
+
+  const auto overlapping_points =
+      overlapping_points_with_template_point |
+      std::views::filter([&](const auto &point) {
+        return point.second.type != point_type ||
+               point.second.border_idx != border_idx;
+      }) |
+      std::ranges::to<std::vector>();
+
+  if (overlapping_points.size() != 1) {
+    const auto &curve = *(borders_[border_idx]->curve);
+    throw std::runtime_error(
+        fmt::format("Found {} points overlapping the end point "
+                    "for border {}",
+                    overlapping_points.size(), curve.Description()));
+  }
+  const auto overlapped_point = overlapping_points[0];
+  const auto overlapped_border_idx = overlapped_point.second.border_idx;
+
+  // Prevent two same constraints
+  if (overlapped_border_idx > border_idx) {
+    return;
+  }
+
+  // Allow full circles to connect, but prevent incorrect constraints here
+  if (overlapped_border_idx == border_idx) {
+    if (overlapped_point.second.type == point_type) {
+      return;
+    }
+    if (point_type == internal::PointType::kStart) {
+      return;
+    }
+  }
+
+  const auto nearest_border_1_point_idx =
+      point_type == internal::PointType::kStart
+          ? points_on_border_[border_idx].front()
+          : points_on_border_[border_idx].back();
+  const auto nearest_border_1_point = points_[nearest_border_1_point_idx].point;
+
+  const auto nearest_border_2_point_idx =
+      overlapped_point.second.type == internal::PointType::kStart
+          ? points_on_border_[overlapped_border_idx].front()
+          : points_on_border_[overlapped_border_idx].back();
+  const auto nearest_border_2_point = points_[nearest_border_2_point_idx].point;
+
+  // Here we define, which border would include this constraint
+  const auto constraint_border_idx =
+      (point - nearest_border_1_point).Length() <
+              (nearest_border_2_point - point).Length()
+          ? border_idx
+          : overlapped_border_idx;
+
+  constraints_.push_back(Constraint{
+      .start_point_idx = nearest_border_1_point_idx,
+      .end_point_idx = nearest_border_2_point_idx,
+      .border_idx = border_idx,
+  });
 }
 
 } // namespace diamond_fem::meshing

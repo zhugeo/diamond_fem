@@ -212,7 +212,7 @@ void PointStepper::StepWithOneLine_(const geometry::Point &grid_point_on_line,
   }
 
   if (intersections_with_line.size() % 2) {
-    throw std::runtime_error("intersections_with_line should be odd length. "
+    throw std::runtime_error("intersections_with_line should be even length. "
                              "Try change grid size a little bit");
   }
 

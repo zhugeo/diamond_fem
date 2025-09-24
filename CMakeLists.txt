@@ -42,13 +42,13 @@ if(DIAMOND_FEM_BUILD_TESTS)
     gtest_discover_tests(DiamondFEMTests)
 endif() # DIAMOND_FEM_BUILD_TESTS
 
+find_package(CGAL REQUIRED COMPONENTS Qt6)
+
 option(DIAMOND_FEM_BUILD_EXAMPLE "Build example" ON)
 if(DIAMOND_FEM_BUILD_EXAMPLE)
     add_executable(DiamondFEMExample example/main.cpp)
     target_link_libraries(DiamondFEMExample DiamondFEM CGAL::CGAL CGAL::CGAL_Qt6 CGAL::CGAL_Basic_viewer)
 endif() # DIAMOND_FEM_BUILD_EXAMPLE
-
-find_package(CGAL REQUIRED COMPONENTS Qt6)
 
 target_include_directories(DiamondFEM PUBLIC include)
 target_link_libraries(DiamondFEM CGAL::CGAL CGAL::CGAL_Basic_viewer fmt::fmt)
