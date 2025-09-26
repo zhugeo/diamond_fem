@@ -83,18 +83,6 @@ TEST(TestPointSparsener, ShouldPreservePointsNearBorder) {
   ASSERT_EQ(ExtractPoints(sparsed_points), ExtractPoints(expected_points));
 }
 
-TEST(TestPointSparsener, TestBoostPointsNear) {
-  // given/when
-  const auto point_1 = internal::BoostPoint{10, 10};
-  const auto point_2 = internal::BoostPoint{10 + 1e-7, 10 + 1e-7};
-  const auto point_3 = internal::BoostPoint{10.1, 10};
-
-  // then
-  EXPECT_TRUE(internal::BoostPointsNear(point_1, point_2));
-  EXPECT_FALSE(internal::BoostPointsNear(point_2, point_3));
-  EXPECT_FALSE(internal::BoostPointsNear(point_1, point_3));
-}
-
 } // namespace
 
 } // namespace diamond_fem::meshing

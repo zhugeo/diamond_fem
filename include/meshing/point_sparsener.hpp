@@ -17,21 +17,19 @@
 
 #include <vector>
 
-#include <meshing/internal_boost_rtree.hpp>
+#include <geometry/spatial_index.hpp>
 #include <meshing/mesh.hpp>
 
 namespace diamond_fem::meshing {
 
 namespace internal {
 
-bool BoostPointsNear(const BoostPoint &p1, const BoostPoint &p2);
-
 std::vector<PointWithBorderInfo>
 SortPoints(std::vector<PointWithBorderInfo> points_to_sort);
 
 struct PointWrapper {
   PointWithBorderInfo point_with_border_info;
-  BoostPoint boost_point;
+  geometry::Point point;
   double distance_to_border;
 };
 
@@ -60,7 +58,7 @@ private:
 
   std::vector<SparsingPassParameters> parameters_;
   std::vector<internal::PointWrapper> points_;
-  internal::RTree rtree_;
+  geometry::SpatialIndex<int> rtree_;
 };
 
 } // namespace diamond_fem::meshing

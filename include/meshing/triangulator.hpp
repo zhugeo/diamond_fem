@@ -6,8 +6,8 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/draw_triangulation_2.h>
 
+#include <geometry/spatial_index.hpp>
 #include <meshing/constraint_connector.hpp>
-#include <meshing/internal_boost_rtree.hpp>
 #include <meshing/mesh.hpp>
 
 namespace diamond_fem::meshing {
@@ -56,7 +56,7 @@ private:
   std::vector<MeshTriangle> triangles_;
   internal::Triangulation triangulation_;
   std::vector<std::vector<int>> triangles_adjacent_to_point_;
-  internal::RTreeWithPointIdx rtree_;
+  geometry::SpatialIndex<int> rtree_;
 };
 
 } // namespace diamond_fem::meshing

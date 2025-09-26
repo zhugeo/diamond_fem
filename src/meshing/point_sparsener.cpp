@@ -1,4 +1,3 @@
-#include <iterator>
 #include <meshing/point_sparsener.hpp>
 
 #include <algorithm>
@@ -13,10 +12,6 @@ namespace diamond_fem::meshing {
 
 namespace internal {
 
-bool BoostPointsNear(const BoostPoint &p1, const BoostPoint &p2) {
-  return geometry::PointsNear(geometry::Point(p1.get<0>(), p1.get<1>()),
-                              geometry::Point(p2.get<0>(), p2.get<1>()));
-}
 
 std::vector<PointWithBorderInfo>
 SortPoints(std::vector<PointWithBorderInfo> points_to_sort) {
@@ -50,9 +45,7 @@ PointSparsener::PointSparsener(
             std::views::transform([&](const auto &point_with_border_info) {
               return internal::PointWrapper{
                   .point_with_border_info = point_with_border_info,
-                  .boost_point =
-                      internal::BoostPoint(point_with_border_info.point.GetX(),
-                                           point_with_border_info.point.GetY()),
+                  .point = point_with_border_info.point,
                   .distance_to_border = calculate_distance_to_border(
                       point_with_border_info.point),
               };
@@ -73,15 +66,11 @@ std::vector<PointWithBorderInfo> PointSparsener::Sparse() {
 }
 
 void PointSparsener::RebuildRTree_() {
-  std::vector<internal::BoostPoint> values;
-  values.reserve(points_.size());
-
+  // Clear the existing index
+  // We'll rebuild by adding all points
   for (size_t i = 0; i < points_.size(); ++i) {
-    const auto &point = points_[i].boost_point;
-    values.emplace_back(point);
+    rtree_.AddPoint(points_[i].point, i);
   }
-
-  rtree_ = internal::RTree(values);
 }
 
 void PointSparsener::DoSparsingPass_(
@@ -92,7 +81,7 @@ void PointSparsener::DoSparsingPass_(
     const auto &point = points_[i];
     if (ShouldRemovePoint_(point, pass_parameters)) {
       points_to_remove.push_back(i);
-      rtree_.remove(point.boost_point);
+      rtree_.RemovePoint(point.point);
     }
   }
 
@@ -121,24 +110,26 @@ bool PointSparsener::ShouldRemovePoint_(
   // itself
   const auto neighbor_count = pass_parameters.num_neighbors + 1;
 
-  auto nearest_points = std::vector<internal::BoostPoint>{};
-  rtree_.query(internal::bgi::nearest(point.boost_point, neighbor_count),
-               std::back_inserter(nearest_points));
+  auto nearest_points = rtree_.FindInRadius(point.point,
+                                           pass_parameters.max_distance_to_neighbor_point,
+                                           neighbor_count);
 
+  // Count neighbors (excluding the point itself)
+  int neighbor_count_found = 0;
   for (const auto &nearest_point : nearest_points) {
     // Skip the point itself
-    if (internal::BoostPointsNear(nearest_point, point.boost_point)) {
+    if (geometry::PointsNear(nearest_point.first, point.point)) {
       continue;
     }
+    neighbor_count_found++;
 
-    const auto distance =
-        internal::bg::distance(point.boost_point, nearest_point);
-    if (distance > pass_parameters.max_distance_to_neighbor_point) {
-      return false;
+    if (neighbor_count_found >= pass_parameters.num_neighbors) {
+      return true;
     }
   }
 
-  return true;
+  // If we didn't find enough neighbors, don't remove the point
+  return false;
 }
 
 } // namespace diamond_fem::meshing

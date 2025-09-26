@@ -24,6 +24,7 @@ private:
 
   std::vector<MeshTriangle> triangles_;
   std::vector<geometry::Point> points_;
+  std::vector<std::vector<int>> triangles_adjacent_to_point_;
   std::vector<internal::TriangleState> triangle_states_;
 };
 
