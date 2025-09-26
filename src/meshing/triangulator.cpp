@@ -41,12 +41,13 @@ internal::Triangulation Triangulator::GetTriangulation() const {
   return triangulation_;
 }
 
-Mesh Triangulator::BuildMesh() {
+std::vector<MeshTriangle> Triangulator::ExtractTriangles() {
   FillRTreeIndex_();
   ExtractTrianglesFromTriangulation_();
+  IndexTriangles_();
+  ApplyConstraintsToTriangles_();
 
-  // TODO
-  return {};
+  return triangles_;
 }
 
 void Triangulator::LoadConstraints_() {
@@ -100,6 +101,21 @@ int Triangulator::GetPointIndex_(const geometry::Point &point) const {
         "Triangulator::GetPointIndex: result.size() = {}", result.size()));
   }
   return result.at(0).second;
+}
+
+void Triangulator::IndexTriangles_() {
+  triangles_adjacent_to_point_.resize(points_.size());
+  for (int triangle_idx = 0; triangle_idx < triangles_.size(); triangle_idx++) {
+    const auto &triangle = triangles_[triangle_idx];
+    const auto vertex_indices = std::vector{
+        triangle.p_1_idx,
+        triangle.p_2_idx,
+        triangle.p_3_idx,
+    };
+    std::ranges::for_each(vertex_indices, [&](const auto &point_idx) {
+      triangles_adjacent_to_point_[point_idx].push_back(triangle_idx);
+    });
+  }
 }
 
 } // namespace diamond_fem::meshing

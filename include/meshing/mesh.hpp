@@ -1,13 +1,13 @@
 #ifndef _DIAMOND_FEM_MESHING_MESH_HPP
 #define _DIAMOND_FEM_MESHING_MESH_HPP
 
-#include "analysis_task/border_condition.hpp"
 #include <optional>
 #include <vector>
 
 #include <geometry/geometry_fwd.hpp>
 
 #include <analysis_task/border.hpp>
+#include <analysis_task/border_condition.hpp>
 #include <geometry/point.hpp>
 #include <geometry/vec.hpp>
 

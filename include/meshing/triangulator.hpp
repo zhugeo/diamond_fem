@@ -39,20 +39,23 @@ public:
 
   void BuildTriangulation();
   internal::Triangulation GetTriangulation() const;
-  Mesh BuildMesh();
+  std::vector<MeshTriangle> ExtractTriangles();
 
 private:
   void LoadConstraints_();
   void LoadPoints_();
   void ExtractTrianglesFromTriangulation_();
+  void ApplyConstraintsToTriangles_();
   void FillRTreeIndex_();
   int GetPointIndex_(const geometry::Point &point) const;
+  void IndexTriangles_();
 
   std::vector<PointWithBorderInfo> points_;
   std::vector<internal::BorderRef> borders_;
   std::vector<Constraint> constraints_;
   std::vector<MeshTriangle> triangles_;
   internal::Triangulation triangulation_;
+  std::vector<std::vector<int>> triangles_adjacent_to_point_;
   internal::RTreeWithPointIdx rtree_;
 };
 
